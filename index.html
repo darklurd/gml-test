@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BizCore — Kecerdasan Bisnis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --accent: #00d4ff;
+  --accent2: #ff6b35;
+  --green: #22c55e;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --purple: #a78bfa;
+  --text: #f1f5f9;
+  --muted: #64748b;
+  --border: rgba(255,255,255,0.08);
+  --card-bg: #161f30;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none; z-index:0;
+}
+
+/* ── SCREENS ── */
+.screen { display:none; position:relative; z-index:1; min-height:100vh; padding:20px; max-width:500px; margin:0 auto; flex-direction:column; }
+.screen.active { display:flex; }
+.screen.host-screen { max-width:960px; }
+
+/* ── TYPOGRAPHY ── */
+.title-xl { font-family:'Syne',sans-serif; font-size:52px; font-weight:800; line-height:1; }
+.title-lg { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; line-height:1.1; }
+.title-md { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+.label-sm { font-size:10px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+.card-glow::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity:0.5;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display:block; width:100%; padding:15px 20px;
+  border:none; border-radius:14px;
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; letter-spacing:1px; text-transform:uppercase;
+  transition:all 0.2s; margin:8px 0;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #0088bb);
+  color: #0a0e1a;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,212,255,0.3); }
+.btn-ghost { background:transparent; color:var(--accent); border:1px solid rgba(0,212,255,0.3); }
+
+/* ── INPUT ── */
+.input {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:14px 18px; color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:14px;
+  outline:none; transition:border-color 0.2s; margin:8px 0;
+}
+.input:focus { border-color:var(--accent); }
+
+/* ── HEALTH BAR ── */
+.health-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+}
+.health-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom: 10px;
+}
+.health-label { font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+.health-value { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; }
+.health-bar-track {
+  height: 12px; background: rgba(255,255,255,0.06);
+  border-radius: 6px; overflow:hidden;
+  position:relative;
+}
+.health-bar-fill {
+  height:100%; border-radius:6px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.5s;
+  position:relative;
+}
+.health-bar-fill::after {
+  content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+.health-status { font-size:11px; margin-top:6px; font-weight:500; }
+
+/* ── OPTION CARDS ── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+.option-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 110px;
+  justify-content: center;
+}
+.option-card:hover:not(:disabled):not(.locked) {
+  border-color: var(--accent);
+  background: rgba(0,212,255,0.06);
+  transform: translateY(-2px);
+}
+.option-card.locked { cursor: not-allowed; }
+.option-card.selected-correct {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.1);
+  animation: bounceIn 0.4s ease;
+}
+.option-card.selected-wrong {
+  border-color: var(--red);
+  background: rgba(239,68,68,0.1);
+  animation: shake 0.4s ease;
+}
+.option-card.reveal-correct {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.06);
+}
+@keyframes bounceIn {
+  0%{transform:scale(0.95)} 50%{transform:scale(1.03)} 100%{transform:scale(1)}
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+}
+.option-emoji { font-size: 36px; line-height:1; }
+.option-letter {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:1px; color:var(--muted);
+}
+.option-text {
+  font-size: 12px; font-weight:500; line-height:1.4;
+  color: var(--text);
+}
+.option-card.selected-correct .option-text { color:var(--green); }
+.option-card.selected-wrong .option-text { color:var(--red); }
+.option-card.reveal-correct .option-text { color:var(--green); }
+
+/* ── TIMER ── */
+.timer-wrap { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.timer-circle {
+  width:52px; height:52px; border-radius:50%;
+  border:3px solid var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-size:18px; font-weight:800;
+  color:var(--accent); flex-shrink:0;
+  transition: border-color 0.3s, color 0.3s;
+}
+.timer-circle.urgent { border-color:var(--red); color:var(--red); animation:pulse 0.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.timer-label { font-size:12px; color:var(--muted); }
+
+/* ── SCORE BAR ── */
+.score-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:10px;
+}
+.score-chip {
+  background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.25);
+  border-radius:8px; padding:5px 12px;
+  font-family:'Syne',sans-serif; font-size:13px; color:var(--accent);
+}
+.q-chip { font-size:12px; color:var(--muted); }
+
+/* ── PROGRESS DOTS ── */
+.progress-dots {
+  display:flex; gap:5px; justify-content:center; margin-bottom:12px;
+}
+.dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--surface2); border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.dot.done-correct { background:var(--green); border-color:var(--green); }
+.dot.done-wrong { background:var(--red); border-color:var(--red); }
+.dot.current { background:var(--accent); border-color:var(--accent); transform:scale(1.3); }
+
+/* ── SCENARIO TAG ── */
+.scenario-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.3);
+  color:var(--accent2); font-size:10px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase;
+  padding:4px 12px; border-radius:6px; margin-bottom:10px;
+}
+
+/* ── QUESTION TEXT ── */
+.question-text {
+  font-family:'Syne',sans-serif; font-size:15px; font-weight:700;
+  line-height:1.5; margin-bottom:14px; color:var(--text);
+}
+
+/* ── FEEDBACK ── */
+.feedback-wrap {
+  border-radius:14px; padding:14px; margin-top:10px;
+  font-size:13px; line-height:1.6; display:none;
+  animation: fadeSlideUp 0.3s ease;
+}
+@keyframes fadeSlideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.feedback-wrap.show { display:block; }
+.feedback-correct { background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25); }
+.feedback-wrong { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); }
+.feedback-title {
+  font-family:'Syne',sans-serif; font-weight:800; font-size:13px;
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;
+}
+.feedback-correct .feedback-title { color:var(--green); }
+.feedback-wrong .feedback-title { color:var(--red); }
+.feedback-body { color:rgba(241,245,249,0.8); font-size:13px; }
+.health-impact {
+  display:flex; align-items:center; gap:6px; margin-top:8px;
+  font-size:12px; font-weight:600;
+}
+
+/* ── DASHBOARD MINI ── */
+.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+.dash-box {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:12px; text-align:center;
+}
+.dash-val {
+  font-family:'Syne',sans-serif; font-size:18px; font-weight:800;
+  margin-bottom:2px;
+}
+.dash-lbl { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
+.c-pos { color:var(--green); }
+.c-neg { color:var(--red); }
+.c-neu { color:var(--accent); }
+.c-warn { color:var(--gold); }
+
+/* ── CONFETTI ── */
+.confetti-container {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:999; overflow:hidden;
+}
+.confetti-piece {
+  position:absolute; width:10px; height:10px;
+  top:-10px; border-radius:2px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform:translateY(0) rotate(0deg); opacity:1; }
+  100% { transform:translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+/* ── RESULTS ── */
+.badge-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0; }
+.badge-card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:16px; padding:16px; text-align:center;
+  opacity:0.35; transition:all 0.4s;
+}
+.badge-card.earned {
+  opacity:1; border-color:var(--gold);
+  background:rgba(245,158,11,0.08);
+  animation:badgePop 0.5s ease;
+}
+@keyframes badgePop { 0%{transform:scale(0.8)} 60%{transform:scale(1.08)} 100%{transform:scale(1)} }
+.badge-icon { font-size:36px; margin-bottom:8px; }
+.badge-name { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:var(--gold); }
+.badge-desc { font-size:11px; color:var(--muted); margin-top:4px; }
+.badge-card:not(.earned) .badge-name { color:var(--muted); }
+
+.result-score {
+  font-family:'Syne',sans-serif; font-size:64px; font-weight:800;
+  text-align:center; line-height:1;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; margin:12px 0;
+}
+.result-grade { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; text-align:center; }
+.divider { height:1px; background:var(--border); margin:14px 0; }
+
+/* ── LB ── */
+.lb-row { display:flex; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border); gap:10px; }
+.lb-rank { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; width:26px; color:var(--muted); }
+.lb-rank.g { color:var(--gold); }
+.lb-rank.s { color:#c0c0c0; }
+.lb-rank.b { color:#cd7f32; }
+.lb-name { flex:1; font-size:13px; }
+.lb-score { font-family:'Syne',sans-serif; font-weight:700; font-size:14px; color:var(--accent); }
+.lb-correct { font-size:10px; color:var(--muted); background:var(--surface2); border-radius:6px; padding:2px 7px; }
+
+/* ── INTRO ── */
+.hero { text-align:center; padding:28px 0 16px; }
+.hero-icon { font-size:60px; animation:float 3s ease-in-out infinite; display:block; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.feature-list { list-style:none; margin:10px 0; }
+.feature-list li { padding:8px 0; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border); display:flex; gap:10px; }
+.feature-list li span:first-child { color:var(--accent); }
+
+/* ── HOST ── */
+#screen-host { max-width:960px; padding:28px; }
+.host-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+.host-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--accent); }
+.host-badge { background:rgba(245,158,11,0.1); border:1px solid var(--gold); border-radius:8px; padding:5px 14px; font-size:10px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; }
+.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+.stat-box { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:16px; text-align:center; }
+.stat-val { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; color:var(--accent); }
+.stat-lbl { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+.host-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.host-card { background:var(--card-bg); border:1px solid var(--border); border-radius:18px; padding:22px; }
+.host-card-title { font-size:10px; font-weight:700; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:16px; }
+.podium-wrap { display:flex; align-items:flex-end; justify-content:center; gap:14px; margin:12px 0 20px; }
+.podium-block { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.podium-name { font-size:12px; max-width:110px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.podium-pts { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; }
+.podium-bar { width:90px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; }
+.podium-medal { font-size:22px; }
+.pulse-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--green); margin-right:6px; animation:pulseDot 1.5s infinite; }
+@keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+.live-lbl { font-size:11px; color:var(--green); display:flex; align-items:center; }
+.empty-state { text-align:center; padding:30px 20px; color:var(--muted); font-size:13px; }
+.refresh-note { font-size:10px; color:var(--muted); text-align:center; margin-top:10px; }
+.prog-mini { height:3px; background:var(--surface2); border-radius:2px; margin-top:5px; overflow:hidden; }
+.prog-mini-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.5s; }
+
+/* ── NEXT BTN ── */
+#next-btn { display:none; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- ══════════════════════════════════
+     INTRO
+══════════════════════════════════ -->
+<div class="screen active" id="screen-intro">
+  <div class="hero">
+    <span class="hero-icon">🏢</span>
+    <div style="font-family:'Syne',sans-serif;font-size:44px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:8px 0">BizCore</div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase">Kecerdasan Bisnis · GML</div>
+  </div>
+
+  <div class="card card-glow">
+    <div class="label-sm" style="margin-bottom:12px">Cara Bermain</div>
+    <ul class="feature-list">
+      <li><span>▸</span><span>Kamu jadi manajer PT Nusantara Maju — perusahaan yang butuh keputusanmu</span></li>
+      <li><span>▸</span><span>Setiap keputusan memengaruhi <strong style="color:var(--green)">Kesehatan Perusahaan</strong></span></li>
+      <li><span>▸</span><span>Jawaban benar = perusahaan makin sehat, poin bertambah</span></li>
+      <li><span>▸</span><span>Kumpulkan badge spesial berdasarkan performamu</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="label-sm" style="margin-bottom:10px">Siapa kamu?</div>
+    <input class="input" id="player-name" type="text" placeholder="Masukkan namamu..." maxlength="20">
+    <button class="btn btn-primary" onclick="startGame()" style="margin-top:10px">MULAI SEKARANG →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     QUESTION
+══════════════════════════════════ -->
+<div class="screen" id="screen-question">
+
+  <!-- Score + Q number -->
+  <div class="score-bar">
+    <div class="score-chip">⚡ <span id="live-score">0</span> poin</div>
+    <div class="q-chip">Soal <span id="q-num">1</span> dari 10</div>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress-dots" id="progress-dots"></div>
+
+  <!-- Health bar -->
+  <div class="health-section">
+    <div class="health-header">
+      <div class="health-label">🏥 Kesehatan PT Nusantara Maju</div>
+      <div class="health-value" id="health-value" style="color:var(--green)">100</div>
+    </div>
+    <div class="health-bar-track">
+      <div class="health-bar-fill" id="health-bar" style="width:100%;background:var(--green)"></div>
+    </div>
+    <div class="health-status" id="health-status" style="color:var(--green)">💚 Perusahaan dalam kondisi prima!</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="card">
+    <div class="label-sm" style="margin-bottom:10px">📊 Dashboard PT Nusantara Maju</div>
+    <div class="dash-grid" id="dash-grid"></div>
+  </div>
+
+  <!-- Question card -->
+  <div class="card card-glow">
+    <div class="scenario-tag" id="scenario-tag">💼 Keuangan</div>
+
+    <div class="timer-wrap">
+      <div class="timer-circle" id="timer-circle">30</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">Waktu tersisa</div>
+        <div class="timer-label">Keputusan lebih cepat = poin lebih banyak</div>
+      </div>
+    </div>
+
+    <div class="question-text" id="question-text"></div>
+
+    <div class="options-grid" id="options-grid"></div>
+
+    <div class="feedback-wrap" id="feedback-wrap">
+      <div class="feedback-title" id="feedback-title"></div>
+      <div class="feedback-body" id="feedback-body"></div>
+      <div class="health-impact" id="health-impact"></div>
+    </div>
+
+    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">LANJUT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     RESULTS
+══════════════════════════════════ -->
+<div class="screen" id="screen-results">
+  <div style="text-align:center;padding:20px 0 8px">
+    <div class="label-sm" style="margin-bottom:4px">Sesi Selesai!</div>
+    <div class="result-score" id="final-score">0</div>
+    <div class="result-grade" id="final-grade"></div>
+  </div>
+
+  <div class="card">
+    <div class="dash-grid">
+      <div class="dash-box"><div class="dash-val c-pos" id="r-correct">0</div><div class="dash-lbl">Jawaban Benar</div></div>
+      <div class="dash-box"><div class="dash-val c-neu" id="r-accuracy">0%</div><div class="dash-lbl">Akurasi</div></div>
+      <div class="dash-box"><div class="dash-val" id="r-health" style="color:var(--green)">100</div><div class="dash-lbl">Kesehatan Akhir</div></div>
+      <div class="dash-box"><div class="dash-val c-warn" id="r-badges">0</div><div class="dash-lbl">Badge Diraih</div></div>
+    </div>
+  </div>
+
+  <!-- Badges -->
+  <div class="card card-glow">
+    <div class="label-sm" style="margin-bottom:14px">🏅 Badge Achievement</div>
+    <div class="badge-grid" id="badge-grid"></div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="label-sm" style="margin-bottom:12px">🏆 Papan Peringkat</div>
+    <div id="result-lb"></div>
+  </div>
+
+  <!-- Takeaways -->
+  <div class="card">
+    <div class="label-sm" style="margin-bottom:12px">💡 Pelajaran Kunci</div>
+    <ul class="feature-list" id="takeaways"></ul>
+  </div>
+
+  <button class="btn btn-ghost" onclick="restartGame()" style="margin-top:8px">↺ Main Lagi</button>
+</div>
+
+<!-- ══════════════════════════════════
+     HOST
+══════════════════════════════════ -->
+<div class="screen host-screen" id="screen-host">
+  <div class="host-hdr">
+    <div>
+      <div class="host-title">BizCore 📊</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">Tampilan Fasilitator</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="live-lbl"><span class="pulse-dot"></span>LIVE</div>
+      <div class="host-badge">HOST VIEW</div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-val" id="h-players">0</div><div class="stat-lbl">Peserta</div></div>
+    <div class="stat-box"><div class="stat-val" id="h-done">0</div><div class="stat-lbl">Selesai</div></div>
+    <div class="stat-box"><div class="stat-val" id="h-avg">—</div><div class="stat-lbl">Rata-rata Skor</div></div>
+  </div>
+
+  <div class="host-card" style="margin-bottom:18px">
+    <div class="host-card-title">🏆 Podium</div>
+    <div class="podium-wrap" id="h-podium"><div class="empty-state">Menunggu peserta...</div></div>
+  </div>
+
+  <div class="host-grid">
+    <div class="host-card">
+      <div class="host-card-title">Papan Peringkat Lengkap</div>
+      <div id="h-lb"><div class="empty-state">Belum ada data</div></div>
+      <div class="refresh-note">🔄 Auto-refresh tiap 3 detik</div>
+    </div>
+    <div class="host-card">
+      <div class="host-card-title">Info Sesi</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2">
+        <div>📱 <span style="color:var(--text)">Link Peserta</span></div>
+        <div style="font-size:11px;color:var(--accent);margin-bottom:10px;word-break:break-all" id="h-player-url">—</div>
+        <div>🖥️ <span style="color:var(--text)">Link Host</span></div>
+        <div style="font-size:11px;color:var(--gold);margin-bottom:16px;word-break:break-all" id="h-host-url">—</div>
+      </div>
+      <div class="divider"></div>
+      <div class="host-card-title" style="margin-top:14px">Poin Debrief</div>
+      <ul class="feature-list" style="margin-top:6px">
+        <li><span>▸</span><span style="font-size:12px">Untung ≠ Kas — perusahaan bisa untung tapi kehabisan uang tunai</span></li>
+        <li><span>▸</span><span style="font-size:12px">ROI & balik modal = cara paling obyektif pilih investasi</span></li>
+        <li><span>▸</span><span style="font-size:12px">Diskon besar bisa bunuh margin — harus tepat sasaran</span></li>
+        <li><span>▸</span><span style="font-size:12px">Reaksi emosional terhadap kompetitor = keputusan berbahaya</span></li>
+      </ul>
+      <button class="btn btn-ghost" onclick="clearLB()" style="margin-top:16px;font-size:11px;padding:10px">🗑 Reset Sesi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════
+// ROUTING
+// ══════════════════════════
+const params = new URLSearchParams(window.location.search);
+const MODE = params.get('mode') || 'play';
+if (MODE === 'host') {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-host').classList.add('active');
+  initHost();
+}
+
+// ══════════════════════════
+// QUESTIONS
+// ══════════════════════════
+const questions = [
+  {
+    tag: "💰 Pendapatan",
+    dashboard: { revenue:"Rp 4,2M", margin:"12%", cashflow:"Rp 380jt", growth:"+3%" },
+    dashColors: ["c-neu","c-warn","c-pos","c-warn"],
+    question: "Penjualan divisimu naik 3%, tapi pasar tumbuh 8%. Artinya kamu sebetulnya kehilangan pangsa pasar. Tim usulkan diskon 15% ke semua produk. Apa keputusanmu?",
+    options: [
+      { emoji:"🔥", label:"Diskon 15% semua produk sekarang!", short:"Diskon besar-besaran" },
+      { emoji:"🎯", label:"Diskon hanya produk yang lambat, pantau hasilnya tiap minggu", short:"Diskon tepat sasaran" },
+      { emoji:"💎", label:"Tidak diskon, jaga harga premium", short:"Pertahankan harga" },
+      { emoji:"⏳", label:"Tunggu data kuartal depan dulu", short:"Tunda keputusan" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 10, wrong: -15 },
+    feedback: {
+      correct: "✅ Tepat! Diskon sembarangan membakar margin di semua lini. Diskon yang tepat sasaran mendorong volume tanpa merusak keuntungan keseluruhan.",
+      wrong: "❌ Diskon menyeluruh bisa memangkas keuntunganmu secara signifikan. Kuncinya: diskon hanya di produk yang membutuhkan, bukan semua lini sekaligus."
+    }
+  },
+  {
+    tag: "✂️ Efisiensi Biaya",
+    dashboard: { revenue:"Rp 4,2M", margin:"9%", cashflow:"Rp 210jt", growth:"+3%" },
+    dashColors: ["c-neu","c-neg","c-warn","c-warn"],
+    question: "Margin turun ke 9% (targetmu 12%). Manajer operasional usul: potong anggaran pelatihan 40% agar margin pulih cepat. Apa yang kamu putuskan?",
+    options: [
+      { emoji:"✂️", label:"Setuju! Potong 40% sekarang juga", short:"Potong 40%" },
+      { emoji:"🔬", label:"Potong 15% saja, alihkan ke pelatihan yang ROI-nya lebih tinggi", short:"Potong selektif" },
+      { emoji:"🛡️", label:"Jangan potong pelatihan, cari penghematan di tempat lain", short:"Cari alternatif" },
+      { emoji:"🧊", label:"Bekukan semua pengeluaran dulu", short:"Bekukan semua" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 8, wrong: -12 },
+    feedback: {
+      correct: "✅ Pemotongan selektif menjaga kemampuan tim tetap berkembang. Memotong pelatihan drastis sering kali diikuti penurunan produktivitas dan turnover tinggi — yang biayanya jauh lebih mahal 12 bulan ke depan.",
+      wrong: "❌ Memotong pelatihan 40% itu penghematan semu. Dalam 6-12 bulan, produktivitas turun dan turnover naik — total biayanya bisa 3-5x lebih besar dari yang 'dihemat'."
+    }
+  },
+  {
+    tag: "💸 Arus Kas",
+    dashboard: { revenue:"Rp 5,1M", margin:"14%", cashflow:"Rp 95jt", growth:"+9%" },
+    dashColors: ["c-pos","c-pos","c-neg","c-pos"],
+    question: "Laporan kelihatan bagus: pendapatan naik, margin sehat. Tapi uang tunai di perusahaan hanya Rp 95jt — sementara gaji karyawan jatuh tempo 3 minggu lagi. Apa aksi prioritasmu?",
+    options: [
+      { emoji:"🏦", label:"Langsung ajukan pinjaman ke bank", short:"Pinjam ke bank" },
+      { emoji:"📞", label:"Kejar tagihan yang belum dibayar pelanggan + minta tempo lebih panjang ke supplier", short:"Optimalkan kas" },
+      { emoji:"⏸️", label:"Tunda gaji 2 minggu untuk jaga kas", short:"Tunda gaji" },
+      { emoji:"👋", label:"Kurangi karyawan agar tagihan gaji turun", short:"Kurangi karyawan" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 10, wrong: -20 },
+    feedback: {
+      correct: "✅ Ini jebakan klasik: laporan untung tapi dompet kosong. Langkah terbaik: percepat penagihan piutang dan negosiasikan tempo pembayaran ke supplier — bukan pinjaman atau pemecatan.",
+      wrong: "❌ Perusahaan yang untung tapi kehabisan kas itu masalah piutang, bukan masalah pinjaman atau headcount. Percepat penagihan = solusi paling cepat dan murah."
+    }
+  },
+  {
+    tag: "📈 Investasi",
+    dashboard: { revenue:"Rp 4,8M", margin:"13%", cashflow:"Rp 520jt", growth:"+6%" },
+    dashColors: ["c-neu","c-pos","c-pos","c-neu"],
+    question: "Ada Rp 500jt siap diinvestasikan. Dua pilihan:\n• Mesin baru: keuntungan balik 18%, tapi baru balik modal 3 tahun\n• Tambah tim sales: keuntungan balik 24%, balik modal hanya 18 bulan\nMana yang kamu pilih?",
+    options: [
+      { emoji:"🏭", label:"Mesin — aset fisik lebih aman dan bisa dilihat", short:"Pilih mesin" },
+      { emoji:"👥", label:"Tim Sales — return lebih tinggi dan balik modal lebih cepat", short:"Pilih tim sales" },
+      { emoji:"⚖️", label:"Bagi 50/50 antara keduanya", short:"Bagi rata" },
+      { emoji:"🏦", label:"Simpan dulu sebagai cadangan kas", short:"Simpan kas" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 10, wrong: -8 },
+    feedback: {
+      correct: "✅ ROI 24% dengan balik modal 18 bulan vs 18% dengan balik modal 3 tahun — pilihan tim sales jelas lebih menguntungkan. Kecerdasan bisnis berarti pilih return terbaik per rupiah, bukan yang paling 'kelihatan nyata'.",
+      wrong: "❌ Aset fisik terasa lebih 'aman' — tapi ROI yang lebih rendah dan balik modal 3x lebih lambat artinya uangmu bekerja kurang efisien. Bandingkan angka, bukan rasa nyaman."
+    }
+  },
+  {
+    tag: "📊 Baca Laporan",
+    dashboard: { revenue:"Rp 6,0M", margin:"7%", cashflow:"Rp 440jt", growth:"+11%" },
+    dashColors: ["c-pos","c-neg","c-pos","c-pos"],
+    question: "Pendapatan naik 11% — bagus! Tapi margin bersih turun drastis ke 7%. CFO bilang biaya produksi naik 22%. Apa penyebab paling mungkin?",
+    options: [
+      { emoji:"🏷️", label:"Tim sales kasih diskon terlalu banyak ke pelanggan", short:"Masalah diskon sales" },
+      { emoji:"🔧", label:"Biaya bahan baku/produksi naik lebih cepat dari harga jual", short:"Biaya produksi naik" },
+      { emoji:"🏢", label:"Biaya kantor dan administrasi tidak terkendali", short:"Overhead membengkak" },
+      { emoji:"📦", label:"Pertumbuhan dari produk yang marginnya tipis saja", short:"Produk margin rendah" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 8, wrong: -10 },
+    feedback: {
+      correct: "✅ Saat biaya produksi tumbuh lebih cepat dari pendapatan, itu sinyal masalah di sisi pasokan — harga bahan baku naik atau proses produksi tidak efisien. Bukan masalah sales.",
+      wrong: "❌ Kunci ada di angka: biaya produksi naik 22% sementara pendapatan naik 11%. Selisih itulah yang 'memakan' margin. Ini masalah struktur biaya, bukan strategi penjualan."
+    }
+  },
+  {
+    tag: "🤝 Negosiasi Klien",
+    dashboard: { revenue:"Rp 4,5M", margin:"11%", cashflow:"Rp 310jt", growth:"+5%" },
+    dashColors: ["c-neu","c-neu","c-pos","c-neu"],
+    question: "Klien terbesarmu menyumbang 35% pendapatan. Mereka minta perpanjangan waktu bayar 90 hari karena sedang ada masalah keuangan internal. Apa responsmu?",
+    options: [
+      { emoji:"🚫", label:"Tolak tegas — kita butuh kas sekarang", short:"Tolak permintaan" },
+      { emoji:"🤲", label:"Setujui 90 hari penuh — hubungan lebih penting", short:"Setujui penuh" },
+      { emoji:"🤝", label:"Negosiasi: tawarkan 45 hari dengan diskon kecil kalau bayar lebih awal", short:"Negosiasi tengah" },
+      { emoji:"⚖️", label:"Serahkan ke tim legal untuk antisipasi pelanggaran kontrak", short:"Eskalasi ke legal" },
+    ],
+    correct: 2,
+    healthDelta: { correct: 10, wrong: -15 },
+    feedback: {
+      correct: "✅ Negosiasi jalan tengah adalah yang terbaik. Kamu menjaga hubungan (35% pendapatan terlalu berharga untuk hilang) sekaligus melindungi posisi kasmu sendiri.",
+      wrong: "❌ Menolak total berisiko kehilangan klien terbesar. Menyetujui penuh membahayakan kasmu. Solusi terbaik: negosiasikan — perpanjangan lebih pendek plus insentif bayar lebih awal."
+    }
+  },
+  {
+    tag: "⚙️ Operasional",
+    dashboard: { revenue:"Rp 3,9M", margin:"10%", cashflow:"Rp 280jt", growth:"+2%" },
+    dashColors: ["c-warn","c-warn","c-pos","c-neg"],
+    question: "Pabrik sudah beroperasi 95% kapasitas. Tambah shift malam bisa tingkatkan output 30%, tapi biaya tenaga kerja naik 18%. Ada sinyal permintaan pasar yang mendukung. Apa putusanmu?",
+    options: [
+      { emoji:"🚀", label:"Langsung tambah shift malam sekarang!", short:"Ekspansi langsung" },
+      { emoji:"🧪", label:"Coba pilot 3 bulan dulu, baru putuskan ekspansi penuh", short:"Pilot dulu" },
+      { emoji:"❌", label:"Tidak usah — kenaikan biaya 18% terlalu berisiko", short:"Tolak ekspansi" },
+      { emoji:"🤝", label:"Outsource ke pihak ketiga saja", short:"Pakai outsource" },
+    ],
+    correct: 1,
+    healthDelta: { correct: 8, wrong: -10 },
+    feedback: {
+      correct: "✅ Pilot run adalah keputusan cerdas. Sinyal pasar bisa keliru — mengunci biaya permanen sebelum memvalidasi permintaan adalah risiko yang tidak perlu. Uji kecil dulu, baru skala.",
+      wrong: "❌ Langsung ekspansi atau langsung tolak — keduanya ekstrem. Pilot 3 bulan memungkinkan kamu validasi sinyal pasar sebelum komit biaya permanen."
+    }
+  },
+  {
+    tag: "🏷️ Strategi Harga",
+    dashboard: { revenue:"Rp 5,3M", margin:"15%", cashflow:"Rp 490jt", growth:"+7%" },
+    dashColors: ["c-pos","c-pos","c-pos","c-neu"],
+    question: "Kompetitor baru saja turunkan harga 20%! Tim kamu panik dan minta kamu ikuti. Margin kamu masih sehat di 15%. Apa yang kamu lakukan?",
+    options: [
+      { emoji:"🏃", label:"Ikuti! Turunkan harga 20% juga agar tidak ketinggalan", short:"Ikuti kompetitor" },
+      { emoji:"😤", label:"Abaikan saja — margin kita bagus, tidak perlu berubah", short:"Abaikan total" },
+      { emoji:"🔍", label:"Analisis dulu: apakah kompetitor bisa bertahan dengan harga itu? Defend dengan nilai, bukan harga", short:"Analisis & defend nilai" },
+      { emoji:"🆕", label:"Luncurkan produk murah baru khusus bersaing di harga", short:"Produk baru murah" },
+    ],
+    correct: 2,
+    healthDelta: { correct: 10, wrong: -12 },
+    feedback: {
+      correct: "✅ Reaksi emosional terhadap kompetitor bisa menghancurkan posisimu sendiri. Pemotongan 20% dari kompetitor seringkali sinyal keputusasaan mereka, bukan kekuatan. Analisis dulu sebelum bergerak.",
+      wrong: "❌ Menurunkan harga 20% saat margin kamu 15% bisa membuatmu merugi. Kompetitor yang drastis memotong harga sering sedang dalam masalah — bukan sedang kuat."
+    }
+  },
+  {
+    tag: "📋 Anggaran",
+    dashboard: { revenue:"Rp 4,0M", margin:"11%", cashflow:"Rp 350jt", growth:"+4%" },
+    dashColors: ["c-neu","c-neu","c-pos","c-warn"],
+    question: "Musim anggaran. Tim kamu minta tambahan anggaran 25%. Finance hanya setujui 10%. Bagaimana kamu alokasikan 10% itu?",
+    options: [
+      { emoji:"⚖️", label:"Bagi rata ke semua departemen — adil untuk semua", short:"Bagi rata" },
+      { emoji:"💰", label:"Semua ke unit yang menghasilkan pendapatan terbesar", short:"Fokus ke pendapatan" },
+      { emoji:"🎯", label:"Prioritaskan kegiatan yang paling jelas dampaknya ke target strategis", short:"Berbasis ROI strategis" },
+      { emoji:"🗣️", label:"Negosiasi ulang ke Finance — minta minimal 18%", short:"Negosiasi ulang" },
+    ],
+    correct: 2,
+    healthDelta: { correct: 8, wrong: -8 },
+    feedback: {
+      correct: "✅ Dengan anggaran terbatas, setiap rupiah harus terhubung ke dampak strategis yang terukur. Bagi rata itu terasa adil tapi sebenarnya membuang sumber daya ke area berdampak rendah.",
+      wrong: "❌ Bagi rata atau fokus ke pendapatan saja — keduanya tidak mempertimbangkan ROI strategis. Alokasi cerdas berarti tanya: aktivitas mana yang paling berdampak ke tujuan utama perusahaan?"
+    }
+  },
+  {
+    tag: "👔 Kepemimpinan",
+    dashboard: { revenue:"Rp 5,7M", margin:"13%", cashflow:"Rp 460jt", growth:"+8%" },
+    dashColors: ["c-pos","c-pos","c-pos","c-pos"],
+    question: "Performa perusahaan sedang bagus! Leadership menawarkan dua jalur karir:\n• Tetap di posisi saat ini: kenaikan gaji 12%\n• Pimpin divisi baru: risiko lebih tinggi tapi potensi naik 35% dalam 18 bulan\nApa pilihanmu?",
+    options: [
+      { emoji:"🛡️", label:"Tetap di posisi — stabil itu pilihan yang cerdas", short:"Pilih stabilitas" },
+      { emoji:"🚀", label:"Ambil divisi baru — framing ke tim sebagai peluang berkembang bersama", short:"Ambil tantangan" },
+      { emoji:"🤝", label:"Ambil divisi baru TAPI negosiasikan jaminan minimum kalau tidak perform", short:"Negosiasi proteksi" },
+      { emoji:"🔎", label:"Minta waktu analisis keuangan divisi baru dulu sebelum memutuskan", short:"Analisis dulu" },
+    ],
+    correct: 2,
+    healthDelta: { correct: 10, wrong: -5 },
+    feedback: {
+      correct: "✅ Pemimpin dengan kecerdasan bisnis mengejar upside sambil melindungi downside. Negosiasikan jaminan minimum — bukan karena takut gagal, tapi karena itulah cara berpikir strategis yang matang.",
+      wrong: "❌ Pilih stabilitas saja atau ambil risiko tanpa proteksi — keduanya kurang lengkap. Langkah terbaik: ambil peluang besar TAPI amankan jaminan minimum terlebih dahulu."
+    }
+  }
+];
+
+// ══════════════════════════
+// BADGES
+// ══════════════════════════
+const BADGES = [
+  {
+    id:'perfect',
+    icon:'🏆', name:'Manajer Sempurna',
+    desc:'Semua 10 jawaban benar',
+    condition: (state) => state.correctCount === 10
+  },
+  {
+    id:'speedster',
+    icon:'⚡', name:'Kilat Pengambil Keputusan',
+    desc:'Rata-rata jawab di bawah 15 detik',
+    condition: (state) => state.avgTime < 15
+  },
+  {
+    id:'healthkeeper',
+    icon:'💚', name:'Penjaga Perusahaan',
+    desc:'Kesehatan perusahaan di atas 70 saat selesai',
+    condition: (state) => state.health >= 70
+  },
+  {
+    id:'strategist',
+    icon:'🧠', name:'Pemikir Strategis',
+    desc:'7 dari 10 jawaban benar',
+    condition: (state) => state.correctCount >= 7
+  },
+  {
+    id:'comeback',
+    icon:'🔥', name:'Bangkit dari Krisis',
+    desc:'Kesehatan pernah di bawah 40 tapi recover ke atas 60',
+    condition: (state) => state.hadCrisis && state.health >= 60
+  },
+  {
+    id:'analyst',
+    icon:'📊', name:'Analis Data',
+    desc:'5 jawaban benar berturut-turut',
+    condition: (state) => state.maxStreak >= 5
+  },
+];
+
+// ══════════════════════════
+// STATE
+// ══════════════════════════
+const LB_KEY = 'bizcore_lb_v3';
+let state = {
+  playerName:'', currentQ:0, score:0, correctCount:0,
+  answered:false, timer:null, timeLeft:30,
+  health:100, history:[],
+  avgTime:30, totalTime:0, questionTimes:[],
+  hadCrisis:false, currentStreak:0, maxStreak:0,
+  dots:[]
+};
+
+function getLB() { try { return JSON.parse(localStorage.getItem(LB_KEY)||'[]'); } catch(e){return[];} }
+function saveLB(lb) { try { localStorage.setItem(LB_KEY,JSON.stringify(lb)); } catch(e){} }
+
+// ══════════════════════════
+// SCREENS
+// ══════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════
+// GAME FLOW
+// ══════════════════════════
+function startGame() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) {
+    document.getElementById('player-name').style.borderColor='var(--red)';
+    document.getElementById('player-name').placeholder='Masukkan namamu dulu!';
+    return;
+  }
+  Object.assign(state, {
+    playerName:name, currentQ:0, score:0, correctCount:0,
+    answered:false, health:100, history:[],
+    totalTime:0, questionTimes:[], hadCrisis:false,
+    currentStreak:0, maxStreak:0, dots:[]
+  });
+  buildDots();
+  showScreen('screen-question');
+  loadQuestion();
+}
+
+function buildDots() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+  for (let i=0; i<questions.length; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' current':'');
+    d.id = 'dot-'+i;
+    container.appendChild(d);
+  }
+}
+
+function updateDots(qIndex, correct) {
+  const prev = document.getElementById('dot-'+qIndex);
+  if (prev) prev.className = 'dot ' + (correct?'done-correct':'done-wrong');
+  const next = document.getElementById('dot-'+(qIndex+1));
+  if (next) next.className = 'dot current';
+}
+
+function loadQuestion() {
+  const q = questions[state.currentQ];
+  state.answered = false;
+  state.timeLeft = 30;
+
+  // update UI
+  document.getElementById('q-num').textContent = state.currentQ+1;
+  document.getElementById('live-score').textContent = state.score;
+  document.getElementById('scenario-tag').textContent = q.tag;
+  document.getElementById('question-text').textContent = q.question;
+
+  // dashboard
+  const keys = ['revenue','margin','cashflow','growth'];
+  const lbls = ['Pendapatan','Margin','Arus Kas','Pertumbuhan'];
+  const grid = document.getElementById('dash-grid');
+  grid.innerHTML = '';
+  keys.forEach((k,i) => {
+    grid.innerHTML += `<div class="dash-box">
+      <div class="dash-val ${q.dashColors[i]}">${q.dashboard[k]}</div>
+      <div class="dash-lbl">${lbls[i]}</div>
+    </div>`;
+  });
+
+  // options
+  const og = document.getElementById('options-grid');
+  og.innerHTML = '';
+  q.options.forEach((opt,i) => {
+    const letters = ['A','B','C','D'];
+    const card = document.createElement('div');
+    card.className = 'option-card';
+    card.id = 'opt-'+i;
+    card.innerHTML = `
+      <div class="option-emoji">${opt.emoji}</div>
+      <div class="option-letter">${letters[i]}</div>
+      <div class="option-text">${opt.short}</div>
+    `;
+    card.onclick = () => selectAnswer(i);
+    og.appendChild(card);
+  });
+
+  // feedback reset
+  const fb = document.getElementById('feedback-wrap');
+  fb.className = 'feedback-wrap';
+  document.getElementById('next-btn').style.display = 'none';
+
+  startTimer();
+}
+
+// ── TIMER ──
+function startTimer() {
+  clearInterval(state.timer);
+  state.timeLeft = 30;
+  updateTimerDisplay();
+  state.questionStart = Date.now();
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if (state.timeLeft <= 0) { clearInterval(state.timer); if(!state.answered) timeOut(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-circle');
+  el.textContent = state.timeLeft;
+  el.className = state.timeLeft <= 8 ? 'timer-circle urgent' : 'timer-circle';
+}
+
+function timeOut() {
+  state.answered = true;
+  lockOptions();
+  const q = questions[state.currentQ];
+  document.getElementById('opt-'+q.correct).classList.add('reveal-correct');
+  applyHealthDelta(q.healthDelta.wrong, false);
+  showFeedback(false, q.feedback.wrong);
+  recordTime();
+  state.currentStreak = 0;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+// ── ANSWER ──
+function selectAnswer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  clearInterval(state.timer);
+  recordTime();
+
+  const q = questions[state.currentQ];
+  const correct = idx === q.correct;
+  lockOptions();
+
+  if (correct) {
+    document.getElementById('opt-'+idx).classList.add('selected-correct');
+    const bonus = Math.floor(state.timeLeft * 2);
+    const pts = 100 + bonus;
+    state.score += pts;
+    state.correctCount++;
+    state.currentStreak++;
+    if (state.currentStreak > state.maxStreak) state.maxStreak = state.currentStreak;
+    document.getElementById('live-score').textContent = state.score;
+    applyHealthDelta(q.healthDelta.correct, true);
+    showFeedback(true, `+${pts} poin (bonus waktu +${bonus})\n\n${q.feedback.correct}`);
+    launchConfetti();
+  } else {
+    document.getElementById('opt-'+idx).classList.add('selected-wrong');
+    document.getElementById('opt-'+q.correct).classList.add('reveal-correct');
+    applyHealthDelta(q.healthDelta.wrong, false);
+    showFeedback(false, q.feedback.wrong);
+    state.currentStreak = 0;
+  }
+
+  updateDots(state.currentQ, correct);
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function recordTime() {
+  const elapsed = Math.round((Date.now() - state.questionStart) / 1000);
+  state.questionTimes.push(elapsed);
+  state.totalTime += elapsed;
+  state.avgTime = state.totalTime / state.questionTimes.length;
+}
+
+function lockOptions() {
+  document.querySelectorAll('.option-card').forEach(c => {
+    c.classList.add('locked');
+    c.onclick = null;
+  });
+}
+
+// ── HEALTH ──
+function applyHealthDelta(delta, isCorrect) {
+  state.health = Math.max(0, Math.min(100, state.health + delta));
+  if (state.health < 40) state.hadCrisis = true;
+
+  const bar = document.getElementById('health-bar');
+  const val = document.getElementById('health-value');
+  const status = document.getElementById('health-status');
+  const impact = document.getElementById('health-impact');
+
+  bar.style.width = state.health + '%';
+
+  let color, statusText;
+  if (state.health >= 70) { color='var(--green)'; statusText='💚 Perusahaan sehat dan berkembang!'; }
+  else if (state.health >= 40) { color='var(--gold)'; statusText='💛 Perusahaan butuh perhatian ekstra.'; }
+  else { color='var(--red)'; statusText='❤️ Perusahaan dalam kondisi kritis!'; }
+
+  bar.style.background = color;
+  val.style.color = color;
+  val.textContent = state.health;
+  status.style.color = color;
+  status.textContent = statusText;
+
+  impact.style.color = isCorrect ? 'var(--green)' : 'var(--red)';
+  impact.textContent = isCorrect
+    ? `📈 Kesehatan perusahaan +${delta} (${state.health}/100)`
+    : `📉 Kesehatan perusahaan ${delta} (${state.health}/100)`;
+}
+
+// ── FEEDBACK ──
+function showFeedback(correct, text) {
+  const fb = document.getElementById('feedback-wrap');
+  fb.className = 'feedback-wrap show ' + (correct?'feedback-correct':'feedback-wrong');
+  document.getElementById('feedback-title').textContent = correct ? '✓ KEPUTUSAN TEPAT!' : '✗ KURANG TEPAT';
+  document.getElementById('feedback-body').textContent = text;
+}
+
+// ── CONFETTI ──
+function launchConfetti() {
+  const container = document.getElementById('confetti-container');
+  const colors = ['#00d4ff','#22c55e','#f59e0b','#a78bfa','#ff6b35','#f1f5f9'];
+  for (let i=0; i<28; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      animation-duration:${0.8+Math.random()*1.2}s;
+      animation-delay:${Math.random()*0.3}s;
+    `;
+    container.appendChild(piece);
+    piece.addEventListener('animationend', () => piece.remove());
+  }
+}
+
+// ── NEXT ──
+function nextQuestion() {
+  state.currentQ++;
+  if (state.currentQ >= questions.length) endGame();
+  else loadQuestion();
+}
+
+// ── END ──
+function endGame() {
+  clearInterval(state.timer);
+
+  // Evaluate badges
+  const earned = BADGES.filter(b => b.condition(state));
+
+  // Save leaderboard
+  const lb = getLB().filter(e => e.name !== state.playerName);
+  lb.push({
+    name: state.playerName, score: state.score,
+    correct: state.correctCount, health: state.health,
+    badges: earned.length, ts: Date.now()
+  });
+  lb.sort((a,b) => b.score-a.score);
+  saveLB(lb.slice(0,20));
+
+  showScreen('screen-results');
+
+  // Scores
+  document.getElementById('final-score').textContent = state.score;
+  document.getElementById('r-correct').textContent = state.correctCount;
+  document.getElementById('r-accuracy').textContent = Math.round((state.correctCount/questions.length)*100)+'%';
+  document.getElementById('r-health').textContent = state.health;
+  document.getElementById('r-health').className = 'dash-val ' + (state.health>=70?'c-pos':state.health>=40?'c-warn':'c-neg');
+  document.getElementById('r-badges').textContent = earned.length;
+
+  // Grade
+  const pct = state.correctCount/questions.length;
+  let grade, gcolor;
+  if (pct>=0.9){grade="🏆 Ahli Kecerdasan Bisnis";gcolor='var(--gold)';}
+  else if (pct>=0.7){grade="📈 Pemikir Strategis";gcolor='var(--green)';}
+  else if (pct>=0.5){grade="📊 Manajer Berkembang";gcolor='var(--accent)';}
+  else {grade="📚 Terus Belajar!";gcolor='var(--muted)';}
+  const ge = document.getElementById('final-grade');
+  ge.textContent = grade; ge.style.color = gcolor;
+
+  if (pct >= 0.7) launchConfetti();
+
+  // Badges
+  const bg = document.getElementById('badge-grid');
+  bg.innerHTML = BADGES.map(b => {
+    const isEarned = earned.find(e=>e.id===b.id);
+    return `<div class="badge-card${isEarned?' earned':''}">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+    </div>`;
+  }).join('');
+
+  // LB
+  renderLB('result-lb', getLB().slice(0,5));
+
+  // Takeaways
+  document.getElementById('takeaways').innerHTML = [
+    "Untung di laporan ≠ uang di tangan. Selalu pantau arus kas nyata.",
+    "ROI & balik modal adalah cara paling obyektif membandingkan investasi.",
+    "Diskon bisa bunuh margin — harus tepat sasaran, bukan menyeluruh.",
+    "Kompetitor yang drastis potong harga seringkali sedang dalam masalah.",
+    "Anggaran terbatas butuh alokasi berbasis dampak strategis, bukan keadilan rata."
+  ].map(t=>`<li><span>▸</span><span>${t}</span></li>`).join('');
+}
+
+function restartGame() {
+  document.getElementById('player-name').value='';
+  showScreen('screen-intro');
+}
+
+// ══════════════════════════
+// SHARED RENDER
+// ══════════════════════════
+function renderLB(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!data||data.length===0) { el.innerHTML='<div class="empty-state">Belum ada data</div>'; return; }
+  const rankClass = i => i===0?'g':i===1?'s':i===2?'b':'';
+  el.innerHTML = data.map((e,i) => `
+    <div class="lb-row">
+      <div class="lb-rank ${rankClass(i)}">${i+1}</div>
+      <div class="lb-name">${e.name}${e.name===state.playerName?' <span style="color:var(--accent);font-size:10px">(Kamu)</span>':''}</div>
+      <span class="lb-correct">${e.correct}/10</span>
+      <div class="lb-score">${e.score}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════
+// HOST
+// ══════════════════════════
+function initHost() {
+  const base = window.location.href.split('?')[0];
+  document.getElementById('h-player-url').textContent = base+'?mode=play';
+  document.getElementById('h-host-url').textContent = base+'?mode=host';
+  refreshHost();
+  setInterval(refreshHost, 3000);
+}
+
+function refreshHost() {
+  const lb = getLB();
+  document.getElementById('h-players').textContent = lb.length;
+  document.getElementById('h-done').textContent = lb.length;
+  const avg = lb.length ? Math.round(lb.reduce((a,e)=>a+e.score,0)/lb.length) : null;
+  document.getElementById('h-avg').textContent = avg||'—';
+
+  // Podium
+  const pod = document.getElementById('h-podium');
+  const top3 = lb.slice(0,3);
+  if (!top3.length) { pod.innerHTML='<div class="empty-state">Menunggu peserta...</div>'; }
+  else {
+    const order = [];
+    if(top3[1]) order.push({...top3[1],pos:2});
+    if(top3[0]) order.push({...top3[0],pos:1});
+    if(top3[2]) order.push({...top3[2],pos:3});
+    const h={1:110,2:80,3:60}, bg={1:'#92400e',2:'#374151',3:'#78350f'};
+    const sc={1:'var(--gold)',2:'#c0c0c0',3:'#cd7f32'};
+    const m={1:'🥇',2:'🥈',3:'🥉'};
+    pod.innerHTML = order.map(e=>`
+      <div class="podium-block">
+        <div class="podium-name">${e.name}</div>
+        <div class="podium-pts" style="color:${sc[e.pos]}">${e.score}</div>
+        <div class="podium-bar" style="height:${h[e.pos]}px;background:${bg[e.pos]}">
+          <span class="podium-medal">${m[e.pos]}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // LB
+  const lbEl = document.getElementById('h-lb');
+  if (!lb.length) { lbEl.innerHTML='<div class="empty-state">Belum ada data</div>'; return; }
+  const rankClass=i=>i===0?'g':i===1?'s':i===2?'b':'';
+  lbEl.innerHTML = lb.slice(0,10).map((e,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rankClass(i)}">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-size:13px">${e.name} ${e.badges?'<span style="font-size:10px;color:var(--gold)">🏅×'+e.badges+'</span>':''}</div>
+        <div class="prog-mini"><div class="prog-mini-fill" style="width:${Math.round((e.correct/10)*100)}%"></div></div>
+      </div>
+      <span class="lb-correct">${e.correct}/10</span>
+      <div class="lb-score">${e.score}</div>
+    </div>`).join('');
+}
+
+function clearLB() {
+  if(confirm('Reset semua data sesi?')){ saveLB([]); refreshHost(); }
+}
+</script>
+</body>
+</html>
